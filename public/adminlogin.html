@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel - Library Management</title>
-    <link rel="stylesheet" href="home.css">
+    <link rel="stylesheet" href="home.css"> <!-- Local CSS -->
+    <link rel="stylesheet" href="adminlogin.css"> <!-- Remote CSS -->
+    
     <script>
         // Restrict access if not logged in
         if (localStorage.getItem("isAuthenticated") !== "true") {
@@ -69,88 +71,8 @@
 
         window.onload = fetchRequests; // Fetch requests automatically on page load
     </script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            text-align: center;
-            margin: 0;
-            padding: 0;
-        }
-        header {
-            background-color: #007BFF;
-            color: white;
-            padding: 15px;
-            font-size: 22px;
-            font-weight: bold;
-        }
-        .container {
-            margin: 20px auto;
-            width: 80%;
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-        }
-        .request-card {
-            background: #ffffff;
-            padding: 15px;
-            margin-bottom: 15px;
-            border-radius: 10px;
-            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-            text-align: left;
-            position: relative;
-        }
-        .request-card h3 {
-            margin: 0;
-            color: #007BFF;
-        }
-        .request-card p {
-            margin: 5px 0;
-            font-size: 14px;
-            color: #333;
-        }
-        .button-container {
-            position: absolute;
-            bottom: 10px;
-            right: 10px;
-        }
-        .accept-btn, .decline-btn {
-            padding: 8px 12px;
-            border: none;
-            border-radius: 5px;
-            font-size: 14px;
-            cursor: pointer;
-            margin: 5px;
-        }
-        .accept-btn {
-            background-color: #28a745;
-            color: white;
-        }
-        .accept-btn:hover {
-            background-color: #218838;
-        }
-        .decline-btn {
-            background-color: #dc3545;
-            color: white;
-        }
-        .decline-btn:hover {
-            background-color: #b02a37;
-        }
-        .logout-btn {
-            background: #dc3545;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 15px;
-            font-size: 16px;
-        }
-        .logout-btn:hover {
-            background: #b02a37;
-        }
-    </style>
+
+    <script src="adminlogin.js"></script> <!-- Remote JS -->
 </head>
 <body>
     <header>Admin Panel - CE Department Library</header>
