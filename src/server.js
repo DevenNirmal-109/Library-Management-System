@@ -4,8 +4,8 @@ const path = require('path');
 const nodemailer = require('nodemailer');
 const session = require('express-session');
 const cron = require('node-cron');
-
 const fs = require('fs');
+
 const jsonFilePath = path.join(__dirname, '..', 'public', 'books', 'dept_lib_new.json');
 
 async function markBookUnavailable(bookName) {
@@ -27,7 +27,25 @@ async function markBookUnavailable(bookName) {
     }
 }
 
+// Add this function alongside markBookUnavailable()
+async function markBookAvailable(bookName) {
+    try {
+        const data = fs.readFileSync(jsonFilePath);
+        const books = JSON.parse(data);
 
+        const updatedBooks = books.map(book => {
+            if (book.Name === bookName) {
+                return { ...book, Available: "true" };
+            }
+            return book;
+        });
+
+        fs.writeFileSync(jsonFilePath, JSON.stringify(updatedBooks, null, 2));
+        console.log(`Marked book available: ${bookName}`);
+    } catch (err) {
+        console.error("Failed to mark book available:", err);
+    }
+}
 
 // Routes
 const homeRoutes = require('./home');
@@ -83,44 +101,13 @@ app.post('/login', (req, res) => {
 });
 
 app.get('/logout', (req, res) => {
-    // If you're using session
     req.session.destroy(err => {
         if (err) {
             console.log("Error destroying session:", err);
         }
-        res.redirect('/'); // Redirect to home page
+        res.redirect('/');
     });
 });
-
-
-// app.post('/login', (req, res) => {
-//     const { username, password } = req.body;
-//     if (username === "admin" && password === "admin123") {
-//         res.json({ success: true });
-//     } else {
-//         res.json({ success: false });
-//     }
-// });
-
-// Add this function alongside markBookUnavailable()
-async function markBookAvailable(bookName) {
-    try {
-        const data = fs.readFileSync(jsonFilePath);
-        const books = JSON.parse(data);
-
-        const updatedBooks = books.map(book => {
-            if (book.Name === bookName) {
-                return { ...book, Available: "true" };
-            }
-            return book;
-        });
-
-        fs.writeFileSync(jsonFilePath, JSON.stringify(updatedBooks, null, 2));
-        console.log(`Marked book available: ${bookName}`);
-    } catch (err) {
-        console.error("Failed to mark book available:", err);
-    }
-}
 
 // Return book route
 app.post('/return-book/:id', async (req, res) => {
@@ -128,10 +115,7 @@ app.post('/return-book/:id', async (req, res) => {
         const book = await BookIssue.findById(req.params.id);
         if (!book) return res.status(404).json({ success: false, message: "Book not found" });
 
-        // Mark as available in JSON
         await markBookAvailable(book.Book_name);
-
-        // Remove from issued list
         await BookIssue.findByIdAndDelete(req.params.id);
 
         res.json({ success: true });
@@ -140,7 +124,6 @@ app.post('/return-book/:id', async (req, res) => {
         res.status(500).json({ success: false });
     }
 });
-
 
 // Handle Accept/Reject Request
 app.post('/handle-request/:id/:action', async (req, res) => {
@@ -166,14 +149,10 @@ app.post('/handle-request/:id/:action', async (req, res) => {
             });
 
             await issuedBook.save();
-
             await markBookUnavailable(bookRequest.Book_name);
 
             subject = 'Book Request Accepted';
             message = `Hello ${bookRequest.Student_name},\n\nYour request for the book "${bookRequest.Book_name}" has been accepted.\nYou can collect it from the library today. Please return it within 10 days.\n\nRegards,\nLibrary Team`;
-
-            // bookRequest.Available = false;
-
         } else if (action === 'decline') {
             subject = 'Book Request Rejected';
             message = `Hello ${bookRequest.Student_name},\n\nWe regret to inform you that your request for the book "${bookRequest.Book_name}" has been rejected due to unavailability of book.\nPlease contact the librarian for further details.\n\nRegards,\nLibrary Team`;
@@ -184,7 +163,7 @@ app.post('/handle-request/:id/:action', async (req, res) => {
         const mailOptions = {
             from: 'devennirmal109@gmail.com',
             to: email,
-            subject: subject,
+            subject,
             text: message
         };
 
@@ -192,7 +171,6 @@ app.post('/handle-request/:id/:action', async (req, res) => {
         console.log(`Confirmation email sent to ${email}`);
 
         await Request.findByIdAndDelete(id);
-
         res.json({ success: true, message: `Request ${action}ed and email sent.` });
     } catch (error) {
         console.error("Error processing request:", error);
@@ -224,7 +202,6 @@ cron.schedule('* * * * *', async () => {
         console.error("Error sending return reminders:", error);
     }
 });
-
 
 // MongoDB connection
 mongoose.connect('mongodb://127.0.0.1:27017/Library_management')
